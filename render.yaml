@@ -2,7 +2,6 @@ services:
   - type: web
     name: sentinelflow
     runtime: static
-    rootDir: sentinelflow
     # Publish only the public site, not functions/, scripts/ or the Firebase files.
     buildCommand: mkdir -p public && cp -r *.html css js assets downloads public/
     staticPublishPath: public
