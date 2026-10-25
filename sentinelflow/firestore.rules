@@ -1,0 +1,83 @@
+/**
+ * SentinelFlow SOAR — Firestore security rules
+ * ---------------------------------------------------------------------
+ * Paste this into Firebase console > Firestore Database > Rules, or
+ * deploy with `firebase deploy --only firestore:rules`.
+ *
+ * The core idea: nothing the browser sends is trusted to grant paid
+ * access or admin access by itself.
+ *   - A signed-in user can read/update their own profile, but can
+ *     never set paid:true or a paid plan on their own document.
+ *   - Only the verifyPaypalPayment Cloud Function (which uses the
+ *     Admin SDK and therefore bypasses these rules entirely) or an
+ *     admin account (identified by a custom auth claim that only
+ *     server-side code can grant — see /functions/index.js and
+ *     /scripts/grant-admin.js) can set paid:true.
+ *   - Telebirr/CBE submissions land as "pending" claims that only an
+ *     admin can approve.
+ *
+ * Review and test these (the Firebase emulator suite is good for this)
+ * before relying on them in production — treat this as a strong
+ * starting point, not a substitute for your own review.
+ * ---------------------------------------------------------------------
+ */
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function isAdmin() { return isSignedIn() && request.auth.token.admin == true; }
+
+    // ---- users/{uid} -----------------------------------------------
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      // New profile docs are created client-side on first sign-in
+      // (see sfEnsureUserDoc in js/firebase-config.js) and must start
+      // on the free, unpaid tier.
+      allow create: if isOwner(uid)
+        && request.resource.data.plan == 'free'
+        && request.resource.data.paid == false;
+
+      // Owners may update their own display fields, or re-select the
+      // free plan (which costs nothing) — but never set paid:true or
+      // a paid plan directly. Admins may update anything (used when
+      // approving a Telebirr/CBE claim).
+      allow update: if isAdmin() || (
+        isOwner(uid) && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photoURL', 'email']) ||
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['plan']) &&
+            request.resource.data.plan == 'free' &&
+            request.resource.data.paid == false
+          )
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    // ---- payment_claims/{claimId} (Telebirr / CBE manual review) ---
+    match /payment_claims/{claimId} {
+      // A signed-in user may file a claim for themselves, starting
+      // "pending" — they can never submit one already marked paid.
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+
+      // Only admins can move a claim to approved/rejected.
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ---- messages/{messageId} (public contact form) -----------------
+    match /messages/{messageId} {
+      allow create: if true; // anyone can submit the contact form
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

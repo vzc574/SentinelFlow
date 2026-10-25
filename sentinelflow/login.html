@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in — SentinelFlow SOAR</title>
+  <meta name="description" content="Sign in to your SentinelFlow SOAR account or create a new one.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="assets/icon.png">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <!-- Google sign-in runs through Firebase Auth's GoogleAuthProvider popup below, so no separate Google Identity Services script is needed here. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+</head>
+
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">
+        <svg class="brand-mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 1 24 6v7c0 8-5 12-11 12S2 21 2 13V6l11-5Z" stroke="currentColor" stroke-width="1.6"
+            stroke-linejoin="round" />
+          <path d="M8 13.2l3.3 3.3L18.2 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+        SentinelFlow
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="download.html">Download</a>
+        <a href="contact.html">Contact</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" />
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 6h18M3 12h18M3 18h18" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="auth-shell">
+      <div class="auth-card">
+
+        <div class="signed-in-note" id="alreadySignedIn" style="display:none;"></div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabSignin" type="button">Sign in</button>
+          <button class="auth-tab" id="tabSignup" type="button">Create account</button>
+        </div>
+
+        <!-- Continue with Google: builds a real Google OAuth 2.0 authorization request
+         and redirects the browser to accounts.google.com. See js/login.js for the
+         GOOGLE_CLIENT_ID placeholder to fill in with your own credential. -->
+        <button class="btn-google" id="googleBtn" type="button">
+          <svg viewBox="0 0 48 48">
+            <path fill="#FFC107"
+              d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z" />
+            <path fill="#FF3D00"
+              d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+            <path fill="#4CAF50"
+              d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.5 35.4 26.9 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.6 5.1C9.6 39.6 16.3 44 24 44z" />
+            <path fill="#1976D2"
+              d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.6 5.4C41.5 36 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z" />
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-divider">or use your email</div>
+
+        <!-- Sign in form -->
+        <form id="signinForm" novalidate>
+          <div class="field" id="si-field-email">
+            <label for="si-email">Work email</label>
+            <input class="input" type="email" id="si-email" placeholder="you@company.com" autocomplete="email">
+            <div class="field-error">Enter a valid email address.</div>
+          </div>
+          <div class="field" id="si-field-password">
+            <label for="si-password">Password</label>
+            <input class="input" type="password" id="si-password" placeholder="••••••••"
+              autocomplete="current-password">
+            <div class="field-error">Enter your password.</div>
+          </div>
+          <label class="checkbox-row" for="si-remember" style="margin-bottom:20px;">
+            <input type="checkbox" id="si-remember">
+            Keep me signed in on this device
+          </label>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Sign in</button>
+          <div class="auth-status" id="siStatus"></div>
+        </form>
+
+        <!-- Create account form -->
+        <form id="signupForm" novalidate style="display:none;">
+          <div class="field" id="su-field-name">
+            <label for="su-name">Full name</label>
+            <input class="input" type="text" id="su-name" placeholder="Jordan Blake" autocomplete="name">
+            <div class="field-error">Enter your name.</div>
+          </div>
+          <div class="field" id="su-field-email">
+            <label for="su-email">Work email</label>
+            <input class="input" type="email" id="su-email" placeholder="you@company.com" autocomplete="email">
+            <div class="field-error">Enter a valid work email address.</div>
+          </div>
+          <div class="field" id="su-field-password">
+            <label for="su-password">Password</label>
+            <input class="input" type="password" id="su-password" placeholder="At least 8 characters"
+              autocomplete="new-password">
+            <div class="hint">Use 8+ characters with a number and a symbol.</div>
+            <div class="field-error">Password doesn't meet the requirements.</div>
+          </div>
+          <label class="checkbox-row" for="su-terms" style="margin-bottom:20px;">
+            <input type="checkbox" id="su-terms">
+            I agree to the <a href="terms.html" style="color:var(--accent);">terms of service</a> and <a
+              href="privacy.html" style="color:var(--accent);">privacy policy</a>.
+          </label>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Create account</button>
+          <div class="auth-status" id="suStatus"></div>
+        </form>
+
+        <div class="auth-foot" id="switchHint">
+          New to SentinelFlow? <a href="#" id="gotoSignup">Create an account</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/login.js"></script>
+</body>
+
+</html>
