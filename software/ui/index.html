@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelFlow Antivirus</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg class="brand-mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 1 24 6v7c0 8-5 12-11 12S2 21 2 13V6l11-5Z" stroke="currentColor" stroke-width="1.6"
+              stroke-linejoin="round" />
+            <path d="M8 13.2l3.3 3.3L18.2 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Sentinel<span>Flow</span></span>
+          <span class="brand-version">Workstation Edition</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+          </svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="scanner">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+          </svg>
+          <span>Threat Scanner</span>
+        </button>
+        <button class="nav-item" data-tab="realtime">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path
+              d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+          </svg>
+          <span>Real-Time Guard</span>
+        </button>
+        <button class="nav-item" data-tab="optimizer">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path
+              d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z" />
+          </svg>
+          <span>Performance Tune-up</span>
+        </button>
+        <button class="nav-item" data-tab="quarantine">
+          <svg viewBox="0 0 24 24" class="nav-icon">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z" />
+          </svg>
+          <span>Quarantine Vault</span>
+          <span class="badge" id="quarantine-badge">0</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button class="sidebar-action-btn" onclick="openHistoryWindow()">
+          <svg viewBox="0 0 24 24" class="footer-icon">
+            <path
+              d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+          </svg>
+          <span>Activity History</span>
+        </button>
+        <button class="sidebar-settings-btn mt-2" id="sidebar-settings-btn" onclick="switchTab('settings')">
+          <svg viewBox="0 0 24 24" class="footer-icon">
+            <path
+              d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+          </svg>
+          <span>System Settings</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Universal Top Bar with Global Search Bar and Kaspersky-style Window Controls -->
+      <header class="topbar-container pywebview-drag-region">
+        <!-- Top Row: Global Search Bar + Window Controls (Flush top right like Kaspersky) -->
+        <div class="search-bar-row">
+          <div class="global-search-wrapper no-drag">
+            <svg viewBox="0 0 24 24" class="search-icon">
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+            <input type="text" id="global-search-input"
+              placeholder="Search (Ctrl+F) SentinelFlow features, scan modes, settings..."
+              oninput="onGlobalSearchInput(this.value)">
+            <!-- Auto-complete Search Results Dropdown -->
+            <div id="search-results-dropdown" class="search-dropdown hidden"></div>
+          </div>
+          
+          <!-- Kaspersky-Style Window Titlebar Controls -->
+          <div class="window-controls-kaspersky no-drag">
+            <button class="win-btn win-help-btn" onclick="openHelpModal()" title="Help & About">
+              <svg viewBox="0 0 24 24" class="win-icon">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" />
+              </svg>
+            </button>
+            <button class="win-btn win-minimize-btn" onclick="windowMinimize()" title="Minimize">
+              <svg viewBox="0 0 24 24" class="win-icon">
+                <path d="M5 12h14v2H5z" />
+              </svg>
+            </button>
+            <button class="win-btn win-maximize-btn" id="win-maximize-btn" onclick="windowToggleMaximize()"
+              title="Maximize / Restore">
+              <svg viewBox="0 0 24 24" class="win-icon">
+                <path d="M5 5h14v14H5V5zm2 2v10h10V7H7z" />
+              </svg>
+            </button>
+            <button class="win-btn win-close-btn" onclick="windowClose()" title="Close to Background">
+              <svg viewBox="0 0 24 24" class="win-icon">
+                <path
+                  d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Row: Title and Header Buttons -->
+        <div class="topbar-action-row no-drag">
+          <div class="topbar-title" id="page-title">Dashboard Overview</div>
+          <div class="topbar-actions">
+            <button class="btn btn-outline btn-sm" onclick="openHistoryWindow()"
+              title="Open Audit Log in Separate Window">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <path
+                  d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+              </svg>
+              Audit History Window
+            </button>
+            <button class="btn btn-primary btn-pro" id="btn-upgrade-pro" onclick="openProUpgrade()">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                <path
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              Upgrade To Pro
+            </button>
+            <button class="btn btn-outline btn-sm" id="btn-minimize-tray" title="Minimize to System Tray">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <path d="M19 13H5v-2h14v2z" />
+              </svg>
+              Tray Mode
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB: DASHBOARD (Expanded & Taller Suite Overview) -->
+      <section class="tab-content active" id="tab-dashboard">
+        <!-- Main Status Card with Brand SVG Logo on clean white/light circular badge -->
+        <div class="status-banner protected">
+          <div class="status-shield-badge">
+            <svg class="brand-mark status-banner-svg" viewBox="0 0 26 26" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 1 24 6v7c0 8-5 12-11 12S2 21 2 13V6l11-5Z" stroke="#1F6F68" stroke-width="1.8"
+                stroke-linejoin="round" />
+              <path d="M8 13.2l3.3 3.3L18.2 9" stroke="#1F6F68" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="status-info">
+            <h2>System Security State: Protected & Optimal</h2>
+            <p>Real-time download interceptor, multi-vector threat engine, heuristic shield, and removable drive
+              protection are fully operational.</p>
+            <div class="status-meta">
+              <span>Last Scan: <strong id="dash-last-scan">Never</strong></span>
+              <span>•</span>
+              <span>Signatures: <strong class="text-success">Synchronized & Current</strong></span>
+              <span>•</span>
+              <span>Cloud Guard: <strong class="text-success">Connected</strong></span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="btn btn-primary" id="dash-quick-scan-btn">
+              ⚡ Run Quick Scan
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('optimizer')">
+              Tune-up System
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Cards Grid (4 Core Security KPI Tiles) -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <svg viewBox="0 0 24 24" class="stat-svg">
+                <path
+                  d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm7 10c0 4.52-2.98 8.69-7 9.93-4.02-1.24-7-5.41-7-9.93V6.3l7-3.11 7 3.11V11zm-11.59.71L6 13.12l4 4 8-8-1.41-1.42L10 14.29z" />
+              </svg>
+            </div>
+            <div class="stat-data">
+              <div class="stat-value" id="dash-threats-blocked">0</div>
+              <div class="stat-title">Threats Neutralized</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <svg viewBox="0 0 24 24" class="stat-svg">
+                <path
+                  d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+              </svg>
+            </div>
+            <div class="stat-data">
+              <div class="stat-value" id="dash-files-scanned">0</div>
+              <div class="stat-title">Files Inspected</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <svg viewBox="0 0 24 24" class="stat-svg">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+            </div>
+            <div class="stat-data">
+              <div class="stat-value text-success" id="dash-realtime-status">Operational</div>
+              <div class="stat-title">Real-Time Shield</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <svg viewBox="0 0 24 24" class="stat-svg">
+                <path
+                  d="M15 4V3H9v1H4v2h1v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V6h1V4h-5zm2 15H7V6h10v13zM9 8h2v9H9zm4 0h2v9h-2z" />
+              </svg>
+            </div>
+            <div class="stat-data">
+              <div class="stat-value" id="dash-junk-cleaned">0 MB</div>
+              <div class="stat-title">Disk Space Reclaimed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workstation Health Snapshot Bar -->
+        <div class="card dash-health-snapshot mb-4">
+          <div class="snapshot-header">
+            <div>
+              <h3>Workstation Health & System Vitality</h3>
+              <p class="text-muted">Live diagnosis of disk storage health, memory availability, and background workload.
+              </p>
+            </div>
+            <div class="snapshot-actions">
+              <button class="btn btn-primary btn-sm" onclick="boostSystemMemory()">⚡ Boost Memory</button>
+              <button class="btn btn-outline btn-sm" onclick="openProcessManagerWindow()">Inspect Processes</button>
+            </div>
+          </div>
+          <div class="snapshot-metrics-grid">
+            <div class="snap-metric-tile">
+              <span class="snap-label">Drive Health Index</span>
+              <strong class="snap-val text-success" id="dash-snap-health">94% (Optimal)</strong>
+            </div>
+            <div class="snap-metric-tile">
+              <span class="snap-label">Storage Capacity</span>
+              <strong class="snap-val" id="dash-snap-storage">220 GB Free</strong>
+            </div>
+            <div class="snap-metric-tile">
+              <span class="snap-label">Available Memory</span>
+              <strong class="snap-val" id="dash-snap-ram">8.8 GB Available</strong>
+            </div>
+            <div class="snap-metric-tile">
+              <span class="snap-label">CPU Workload</span>
+              <strong class="snap-val" id="dash-snap-cpu">12% Normal</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comprehensive Antivirus Suite Features Grid (All Core Security Modules) -->
+        <h3 class="section-heading">Comprehensive Security & System Suite</h3>
+        <div class="feature-cards-grid feature-cards-grid-9">
+          <!-- Feature 1: Threat Scanner -->
+          <div class="feature-card" onclick="switchTab('scanner')">
+            <div class="feature-card-header">
+              <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+              </div>
+              <h4>Threat Scanner</h4>
+            </div>
+            <p>Execute Quick, Targeted, Full Disk, and Network Safety inspections with deep PE inspection.</p>
+            <div class="card-action">Open Scanner &rarr;</div>
+          </div>
+
+          <!-- Feature 2: Real-Time Guard -->
+          <div class="feature-card" onclick="switchTab('realtime')">
+            <div class="feature-card-header">
+              <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                </svg>
+              </div>
+              <h4>Real-Time File Guard</h4>
+            </div>
+            <p>Continuous watchdog protection intercepting downloaded droppers and unverified files.</p>
+            <div class="card-action">View Shield &rarr;</div>
+          </div>
+
+          <!-- Feature 3: Network Safety -->
+          <div class="feature-card" onclick="switchTab('scanner'); runNetworkScan();">
+            <div class="feature-card-header">
+              <div class="feature-icon-box" style="color:#3B82F6;">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                </svg>
+              </div>
+              <h4>Network & Internet Safety</h4>
+            </div>
+            <p>Inspects open listening ports, socket connections, DNS vulnerabilities, and backdoor activity.</p>
+            <div class="card-action">Scan Network &rarr;</div>
+          </div>
+
+          <!-- Feature 4: Removable Junk Cleaner -->
+          <div class="feature-card" onclick="switchTab('optimizer')">
+            <div class="feature-card-header">
+              <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M15 4V3H9v1H4v2h1v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V6h1V4h-5zm2 15H7V6h10v13zM9 8h2v9H9zm4 0h2v9h-2z" />
+                </svg>
+              </div>
+              <h4>Removable Junk Cleaner</h4>
+            </div>
+            <p>Purge temporary files, crash dumps, and browser caches with Explorer review confirmation.</p>
+            <div class="card-action">Clean Junk &rarr;</div>
+          </div>
+
+          <!-- Feature 5: Startup Speed Optimizer -->
+          <div class="feature-card" onclick="switchTab('optimizer')">
+            <div class="feature-card-header">
+              <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z" />
+                </svg>
+              </div>
+              <h4>Startup Boot Optimizer</h4>
+            </div>
+            <p>Disable heavy boot applications from Windows Run keys to accelerate system startup.</p>
+            <div class="card-action">Optimize Boot &rarr;</div>
+          </div>
+
+          <!-- Feature 6: Unused Apps & Bloatware -->
+          <div class="feature-card" onclick="switchTab('optimizer')">
+            <div class="feature-card-header">
+              <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z" />
+                </svg>
+              </div>
+              <h4>Unused & Bloatware Apps</h4>
+            </div>
+            <p>Discover installed applications, evaluate disk consumption, and trigger clean uninstallers.</p>
+            <div class="card-action">Inspect Apps &rarr;</div>
+          </div>
+
+          <!-- Feature 7: Battery Saver -->
+          <div class="feature-card" onclick="switchTab('optimizer')">
+            <div class="feature-card-header">
+              <div class="feature-icon-box" style="color:#EAB308;">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z" />
+                </svg>
+              </div>
+              <h4>Battery & Power Saver</h4>
+            </div>
+            <p>Identify energy draining background processes and extend laptop battery longevity.</p>
+            <div class="card-action">Check Battery &rarr;</div>
+          </div>
+
+          <!-- Feature 8: PC Resource & Task Manager -->
+          <div class="feature-card" onclick="openProcessManagerWindow()">
+            <div class="feature-card-header">
+              <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
+                </svg>
+              </div>
+              <h4>PC Resource & Task Review</h4>
+            </div>
+            <p>Separate window with real-time CPU/RAM tracking and instant task termination controls.</p>
+            <div class="card-action">Open Tasks Window &rarr;</div>
+          </div>
+
+          <!-- Feature 9: Quarantine Vault -->
+          <div class="feature-card" onclick="switchTab('quarantine')">
+            <div class="feature-card-header">
+              <div class="feature-icon-box" style="color:#EF4444;">
+                <svg viewBox="0 0 24 24" class="feature-svg">
+                  <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z" />
+                </svg>
+              </div>
+              <h4>Quarantine Vault</h4>
+            </div>
+            <p>Isolated XOR-scrambled storage for identified payloads with restore or zero-wipe actions.</p>
+            <div class="card-action">View Vault &rarr;</div>
+          </div>
+        </div>
+
+        <!-- Removable Storage & Auto-Detection Status -->
+        <div class="card mt-4 dash-usb-box">
+          <div class="card-header-flex">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div class="feature-icon-box" style="width:36px; height:36px;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path
+                    d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07c.7-.37 1.2-1.08 1.2-1.93 0-1.21-.99-2.2-2.2-2.2-1.21 0-2.2.99-2.2 2.2 0 .85.5 1.56 1.2 1.93V13c0 1.11.89 2 2 2h3v3.05c-.71.37-1.2 1.1-1.2 1.95a2.2 2.2 0 0 0 4.4 0c0-.85-.49-1.58-1.2-1.95V15h3c1.11 0 2-.89 2-2v-2h1V7h-4z" />
+                </svg>
+              </div>
+              <div>
+                <strong style="font-size:14px;">Removable Storage & USB Auto-Guardian</strong>
+                <p class="text-muted" style="font-size:12px;">Auto-intercepts USB flash drives on connection and scans
+                  for autorun scripts or hidden worm shortcuts.</p>
+              </div>
+            </div>
+            <span class="badge success">Active & Monitoring</span>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed Preview -->
+        <div class="card mt-4">
+          <div class="card-header-flex">
+            <div>
+              <h3>Recent Security Shield Activity</h3>
+              <p class="text-muted">Live event logging of threat interceptions, policy changes, and background
+                maintenance.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="openHistoryWindow()">
+              Open Full Audit Window
+            </button>
+          </div>
+          <div class="activity-log" id="dash-recent-activity">
+            <div class="log-entry info">
+              <span class="log-time">[System]</span>
+              <span class="log-msg">SentinelFlow antivirus engine active and protecting your workstation.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: THREAT SCANNER (Modernized Grid) -->
+      <section class="tab-content" id="tab-scanner">
+        <div id="scan-select-view">
+          <div class="section-intro">
+            <h3>Antivirus Threat Scanner</h3>
+            <p>Select your desired scan depth. SentinelFlow inspects executable binaries, PE header anomalies, script
+              droppers, and open network sockets.</p>
+          </div>
+
+          <div class="scan-modes-grid-2x2">
+            <!-- Mode 1: Quick Scan (Recommended) -->
+            <div class="scan-card-2x2 card-quick-modern">
+              <div class="scan-card-top">
+                <div class="scan-icon-bubble bubble-quick">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 2v11h3v9l7-12h-4l4-8z" />
+                  </svg>
+                </div>
+                <div class="scan-title-group">
+                  <div class="scan-title-row">
+                    <h4>Quick Threat Scan</h4>
+                    <span class="scan-pill-badge pill-recommended">Recommended</span>
+                  </div>
+                  <p class="scan-subtext">Rapidly inspects active RAM memory, running processes, startup items, and
+                    Downloads folder.</p>
+                </div>
+              </div>
+              <div class="scan-features-row">
+                <span class="feature-tag">⚡ In-Memory & Boot</span>
+                <span class="feature-tag">📁 Downloads & Temp</span>
+                <span class="feature-tag">⏱️ ~30-60 Seconds</span>
+              </div>
+              <div class="scan-card-bottom">
+                <div class="scan-stat-hint">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                  </svg>
+                  <span>Zero impact on system speed</span>
+                </div>
+                <button class="btn btn-primary scan-action-btn" onclick="startScan('quick')">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  Run Quick Scan
+                </button>
+              </div>
+            </div>
+
+            <!-- Mode 2: Full System Scan (Exhaustive) -->
+            <div class="scan-card-2x2 card-full-modern">
+              <div class="scan-card-top">
+                <div class="scan-icon-bubble bubble-full">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm7 10c0 4.52-2.98 8.69-7 9.93-4.02-1.24-7-5.41-7-9.93V6.3l7-3.11 7 3.11V11z" />
+                  </svg>
+                </div>
+                <div class="scan-title-group">
+                  <div class="scan-title-row">
+                    <h4>Full System Scan</h4>
+                    <span class="scan-pill-badge pill-exhaustive">Exhaustive</span>
+                  </div>
+                  <p class="scan-subtext">Deep inspection of all local fixed drives, boot sectors, system archives, and
+                    rootkit areas.</p>
+                </div>
+              </div>
+              <div class="scan-features-row">
+                <span class="feature-tag">💾 All Disk Volumes</span>
+                <span class="feature-tag">🔍 Deep Binary Inspection</span>
+                <span class="feature-tag">🛡️ Rootkit & Archive Audit</span>
+              </div>
+              <div class="scan-card-bottom">
+                <div class="scan-stat-hint">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                  </svg>
+                  <span>Recommended once a week</span>
+                </div>
+                <button class="btn btn-primary scan-action-btn" onclick="startScan('full')">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  Run Full Scan
+                </button>
+              </div>
+            </div>
+
+            <!-- Mode 3: Selected Target Scan (Targeted) -->
+            <div class="scan-card-2x2 card-selected-modern">
+              <div class="scan-card-top">
+                <div class="scan-icon-bubble bubble-selected">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
+                  </svg>
+                </div>
+                <div class="scan-title-group">
+                  <div class="scan-title-row">
+                    <h4>Selected Target Scan</h4>
+                    <span class="scan-pill-badge pill-targeted">Targeted</span>
+                  </div>
+                  <p class="scan-subtext">Targeted on-demand inspection of any directory, USB flash drive, or downloaded
+                    installer.</p>
+                </div>
+              </div>
+              <div class="scan-features-row">
+                <span class="feature-tag">📁 Custom Folder</span>
+                <span class="feature-tag">📄 Single File Verification</span>
+                <span class="feature-tag">💾 Removable USB Drives</span>
+              </div>
+              <div class="scan-card-bottom">
+                <div class="scan-stat-hint">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                  </svg>
+                  <span>Verify suspicious files or USB</span>
+                </div>
+                <div class="scan-btn-group">
+                  <button class="btn btn-outline" onclick="browseAndScanFolder()">
+                    📁 Folder
+                  </button>
+                  <button class="btn btn-outline" onclick="browseAndScanFile()">
+                    📄 File
+                  </button>
+                  <button class="btn btn-primary" onclick="scanConnectedUsbDrive()">
+                    💾 Scan USB
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mode 4: Network & Internet Safety Scan (Network) -->
+            <div class="scan-card-2x2 card-network-modern">
+              <div class="scan-card-top">
+                <div class="scan-icon-bubble bubble-network">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                  </svg>
+                </div>
+                <div class="scan-title-group">
+                  <div class="scan-title-row">
+                    <h4>Network & Internet Safety</h4>
+                    <span class="scan-pill-badge pill-network">Web & Ports</span>
+                  </div>
+                  <p class="scan-subtext">Scans open listening ports, socket anomalies, DNS security, and outbound
+                    backdoor connections.</p>
+                </div>
+              </div>
+              <div class="scan-features-row">
+                <span class="feature-tag">🌐 Active Sockets</span>
+                <span class="feature-tag">🔒 Open Port Audit</span>
+                <span class="feature-tag">🛡️ Backdoor Isolation</span>
+              </div>
+              <div class="scan-card-bottom">
+                <div class="scan-stat-hint">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                  </svg>
+                  <span>Instant firewall connection audit</span>
+                </div>
+                <button class="btn btn-primary scan-action-btn" onclick="runNetworkScan()">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                  </svg>
+                  Inspect Network
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Network Scan Results Container -->
+          <div id="network-scan-results" class="card mt-4 hidden">
+            <div class="card-header-flex">
+              <div>
+                <h3>Network & Internet Safety Assessment</h3>
+                <p class="text-muted" id="net-scan-summary">Analyzing active connections, open ports, and DNS
+                  security...</p>
+              </div>
+              <span class="badge success" id="net-safety-badge">Secure</span>
+            </div>
+            <div class="table-responsive mt-3">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Protocol</th>
+                    <th>Local Socket</th>
+                    <th>Remote Address</th>
+                    <th>Status</th>
+                    <th>Process</th>
+                  </tr>
+                </thead>
+                <tbody id="net-connections-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Scan Progress View -->
+        <div id="scan-progress-view" class="hidden">
+          <div class="scan-active-card">
+            <div class="radar-container">
+              <div class="radar-sweep"></div>
+              <div class="radar-core">
+                <span id="scan-percent-text">0%</span>
+              </div>
+            </div>
+
+            <div class="scan-live-details">
+              <h3 id="scan-type-title">Inspection in Progress...</h3>
+              <div class="current-file-box">
+                <span class="file-label">Inspecting:</span>
+                <span class="file-path" id="scan-current-file">Initializing scanner engine...</span>
+              </div>
+
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="scan-progress-bar" style="width: 0%;"></div>
+              </div>
+
+              <div class="scan-metrics-row">
+                <div class="metric">
+                  <span class="label">Files Inspected</span>
+                  <span class="val" id="scan-files-count">0 / 0</span>
+                </div>
+                <div class="metric">
+                  <span class="label">Inspection Speed</span>
+                  <span class="val" id="scan-speed">0 files/s</span>
+                </div>
+                <div class="metric">
+                  <span class="label">Data Processed</span>
+                  <span class="val" id="scan-data-processed">0 MB</span>
+                </div>
+                <div class="metric">
+                  <span class="label">Elapsed Time</span>
+                  <span class="val" id="scan-elapsed">00:00</span>
+                </div>
+                <div class="metric">
+                  <span class="label">Threats Detected</span>
+                  <span class="val text-danger" id="scan-threats-count">0</span>
+                </div>
+              </div>
+
+              <div class="scan-controls-row">
+                <button class="btn btn-outline" id="btn-pause-scan" onclick="togglePauseScan()">Pause</button>
+                <button class="btn btn-danger" id="btn-cancel-scan" onclick="cancelScan()">Cancel Scan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scan Result View (Kaspersky-style High-End Verdict) -->
+        <div id="scan-results-view" class="hidden">
+          <div class="scan-verdict-card" id="results-card-status">
+            <div class="verdict-banner-row">
+              <div class="verdict-icon-container" id="result-icon-display">
+                <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+              </div>
+              <div class="verdict-text-group">
+                <div class="verdict-title-row">
+                  <h3 id="result-title">System Verified Clean</h3>
+                  <span class="badge" id="result-status-badge">Safe</span>
+                </div>
+                <p id="result-subtitle">All targeted objects and executable memory passed security heuristics without threats.</p>
+              </div>
+            </div>
+
+            <div class="verdict-summary-kpis">
+              <div class="verdict-kpi">
+                <span class="kpi-label">Files Inspected</span>
+                <strong class="kpi-val" id="res-kpi-files">0</strong>
+              </div>
+              <div class="verdict-kpi">
+                <span class="kpi-label">Data Inspected</span>
+                <strong class="kpi-val" id="res-kpi-mb">0 MB</strong>
+              </div>
+              <div class="verdict-kpi">
+                <span class="kpi-label">Scan Duration</span>
+                <strong class="kpi-val" id="res-kpi-time">00:00</strong>
+              </div>
+              <div class="verdict-kpi">
+                <span class="kpi-label">Threats Quarantined</span>
+                <strong class="kpi-val" id="res-kpi-threats">0</strong>
+              </div>
+            </div>
+
+            <div class="verdict-actions-bar">
+              <button class="btn btn-primary" onclick="resetScannerView()">
+                <span>Done / Return to Scanner</span>
+              </button>
+              <button class="btn btn-outline" onclick="openHistoryWindow()">
+                <span>View Security Audit Log</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="threats-table-container" class="card mt-4 hidden">
+            <div class="card-header-flex">
+              <div>
+                <h3>Neutralized Threats Log</h3>
+                <p class="text-muted">Infected artifacts isolated into the encrypted Quarantine Vault.</p>
+              </div>
+              <span class="badge danger" id="threats-table-count-badge">0 Neutralized</span>
+            </div>
+            <div class="table-responsive mt-3">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Threat Signature</th>
+                    <th>Classification</th>
+                    <th>Severity</th>
+                    <th>File Location</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="threats-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: REAL-TIME GUARD -->
+      <section class="tab-content" id="tab-realtime">
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3>Real-Time Protection & Web Interception</h3>
+              <p>Continuously intercepts file drops, browser downloads, and USB flash memory in real-time.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="realtime-toggle-switch" checked onchange="toggleRealtimeShield(this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="shield-features-list">
+            <div class="shield-feature-item">
+              <div class="shield-f-icon-box">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" />
+                </svg>
+              </div>
+              <div class="shield-f-text">
+                <strong>Download & Drop Interceptor</strong>
+                <p>Scans downloaded payloads before disk execution occurs.</p>
+              </div>
+            </div>
+
+            <div class="shield-feature-item">
+              <div class="shield-f-icon-box">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07c.7-.37 1.2-1.08 1.2-1.93 0-1.21-.99-2.2-2.2-2.2-1.21 0-2.2.99-2.2 2.2 0 .85.5 1.56 1.2 1.93V13c0 1.11.89 2 2 2h3v3.05c-.71.37-1.2 1.1-1.2 1.95a2.2 2.2 0 0 0 4.4 0c0-.85-.49-1.58-1.2-1.95V15h3c1.11 0 2-.89 2-2v-2h1V7h-4z" />
+                </svg>
+              </div>
+              <div class="shield-f-text">
+                <strong>Removable Storage Guardian</strong>
+                <p>Detects USB insertions and scans for shortcut malware and autorun payloads.</p>
+              </div>
+            </div>
+
+            <div class="shield-feature-item">
+              <div class="shield-f-icon-box">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+                </svg>
+              </div>
+              <div class="shield-f-text">
+                <strong>Heuristic Script & PE Shield</strong>
+                <p>Blocks obfuscated PowerShell commands, ransomware shadow destruction, and packed binaries.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="security-test-box">
+            <h4>Security Verification</h4>
+            <p>Generate a safe EICAR test string in Downloads to test real-time interception, alerts, and audit logging.
+            </p>
+            <button class="btn btn-outline" onclick="generateEicarTest()">Generate Safe Test File</button>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-header-flex">
+            <div>
+              <h3>Interception & Guard Event Stream</h3>
+              <p class="text-muted">Live feed of file checks and threat blocks.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-sm btn-outline" onclick="openHistoryWindow()">Open Full History Window</button>
+              <button class="btn btn-sm btn-outline" onclick="clearGuardEvents()">Clear Stream</button>
+            </div>
+          </div>
+          <div class="activity-log" id="guard-activity-log">
+            <div class="log-entry info">
+              <span class="log-time">[System]</span>
+              <span class="log-msg">SentinelFlow Real-Time Shield initialized and active.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: PERFORMANCE TUNE-UP (Unified Comprehensive View: All 5 Sections Directly Visible) -->
+      <section class="tab-content" id="tab-optimizer">
+
+        <!-- SECTION 1: Drive & System Health Score (Semi-Circular Arc Gauge - Matching User Reference) -->
+        <div class="card health-gauge-card mb-4">
+          <div class="gauge-title-label">Drive & Workstation Health Score</div>
+
+          <div class="semi-gauge-wrapper">
+            <svg viewBox="0 0 200 120" class="gauge-svg">
+              <!-- Background Arc -->
+              <path d="M 25 105 A 75 75 0 0 1 175 105" fill="none" stroke="var(--border-color)" stroke-width="10"
+                stroke-linecap="round" />
+              <!-- Progress Arc -->
+              <path id="gauge-progress-arc" d="M 25 105 A 75 75 0 0 1 175 105" fill="none" stroke="var(--accent-color)"
+                stroke-width="10" stroke-linecap="round" stroke-dasharray="235.6" stroke-dashoffset="14" />
+            </svg>
+            <div class="gauge-score-center">
+              <span class="gauge-num" id="gauge-score-text">94</span><span class="gauge-percent">%</span>
+            </div>
+          </div>
+
+          <div class="gauge-status-subtitle" id="gauge-health-desc">Healthy and nearly as good as new</div>
+
+          <div class="health-metrics-grid mt-4">
+            <div class="health-m-box">
+              <span class="label">Storage Free Space</span>
+              <strong id="health-storage-val">220 GB Free / 512 GB</strong>
+            </div>
+            <div class="health-m-box">
+              <span class="label">Available RAM</span>
+              <strong id="health-ram-val">8.8 GB Free / 16 GB</strong>
+            </div>
+            <div class="health-m-box">
+              <span class="label">CPU Utilization</span>
+              <strong id="health-cpu-val">12% Normal Load</strong>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:center; gap:12px; margin-top:20px;">
+            <button class="btn btn-primary" onclick="boostSystemMemory()">⚡ Boost Memory & Speed Now</button>
+            <button class="btn btn-outline" onclick="openProcessManagerWindow()">Open PC Resource & Task Review
+              Window</button>
+          </div>
+        </div>
+
+        <!-- SECTION 2: Removable Junk Files Cleaner -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3>1. Removable & Temporary Junk File Cleaner</h3>
+              <p>Search for and wipe temporary system files, crash dumps, and browser caches. Verify files in Explorer
+                first.</p>
+            </div>
+            <button class="btn btn-primary" id="btn-scan-junk" onclick="scanJunkFiles()">Scan Removable Files</button>
+          </div>
+
+          <div id="optimizer-results-box" class="mt-3">
+            <div class="optimizer-summary-bar">
+              <div>
+                <div class="text-muted">Reclaimable Space</div>
+                <div class="reclaimable-size" id="opt-total-size">0 MB</div>
+              </div>
+              <div>
+                <div class="text-muted">Junk Items Found</div>
+                <div class="reclaimable-files" id="opt-total-files">0 items</div>
+              </div>
+              <button class="btn btn-primary" id="btn-clean-junk-action" disabled onclick="confirmAndCleanJunk()">
+                Purge Selected Junk
+              </button>
+            </div>
+
+            <div class="junk-categories-list" id="junk-categories-container">
+              <div class="empty-state">Click "Scan Removable Files" to analyze disk caches.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: Startup Speed Optimizer -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3>2. Startup Speed Optimizer</h3>
+              <p>Inspect programs that launch on Windows boot and disable high-impact apps to speed up startup times.
+              </p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="loadStartupApps()">Refresh Startup List</button>
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Application</th>
+                  <th>Location / Registry Key</th>
+                  <th>Boot Impact</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="startup-apps-tbody">
+                <tr>
+                  <td colspan="4" class="text-center text-muted">Click "Refresh Startup List" to scan.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECTION 4: Unused & Bloatware Apps Scanner -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3>3. Unused & Bloatware Application Scanner</h3>
+              <p>Detect installed desktop applications, their disk footprint, and launch clean uninstallers.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="loadInstalledApps()">Scan Installed Apps</button>
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Software Name</th>
+                  <th>Publisher</th>
+                  <th>Estimated Size</th>
+                  <th>Install Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="installed-apps-tbody">
+                <tr>
+                  <td colspan="5" class="text-center text-muted">Click "Scan Installed Apps" to inspect installed
+                    software.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECTION 5: Battery & Power Saver Section -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3>4. Battery & Power Saver Optimizer</h3>
+              <p>Identifies background applications draining laptop battery and CPU power cycles.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="loadBatteryHogs()">Analyze Power Drain</button>
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Process Name</th>
+                  <th>PID</th>
+                  <th>CPU Usage</th>
+                  <th>RAM Usage</th>
+                  <th>Energy Drain Impact</th>
+                </tr>
+              </thead>
+              <tbody id="battery-hogs-tbody">
+                <tr>
+                  <td colspan="5" class="text-center text-muted">Click "Analyze Power Drain" to evaluate background
+                    tasks.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECTION 6: PC Resource & Task Review Launcher Tile -->
+        <div class="card mb-4">
+          <div class="card-header-flex">
+            <div>
+              <h3>5. PC Resource Consumption & Taskbar Review</h3>
+              <p>Inspect all active foreground and background processes running on your workstation in a dedicated
+                window.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openProcessManagerWindow()">Launch Resource & Task Review
+              Window</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB: QUARANTINE VAULT -->
+      <section class="tab-content" id="tab-quarantine">
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3>Encrypted Quarantine Vault</h3>
+              <p>Infected files are safely scrambled and isolated so they cannot execute or harm your machine.</p>
+            </div>
+            <div class="actions-group">
+              <button class="btn btn-outline btn-sm" onclick="refreshQuarantine()">Refresh</button>
+              <button class="btn btn-danger btn-sm" onclick="wipeAllQuarantine()">Purge Vault</button>
+            </div>
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Threat Signature</th>
+                  <th>File Name</th>
+                  <th>Original Path</th>
+                  <th>Quarantine Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="quarantine-table-body">
+                <tr>
+                  <td colspan="5" class="text-center text-muted">No files in quarantine vault. System is clean.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: SETTINGS (Categorized Premium Sections) -->
+      <section class="tab-content" id="tab-settings">
+        <!-- Settings Category Navigation Bar -->
+        <div class="settings-nav-bar">
+          <button class="settings-tab-btn active" data-settings-tab="appearance" onclick="switchSettingsSection('appearance')">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.35 19.64 10.63 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+            <span>Appearance & Theme</span>
+          </button>
+          <button class="settings-tab-btn" data-settings-tab="protection" onclick="switchSettingsSection('protection')">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+            <span>Threat Protection</span>
+          </button>
+          <button class="settings-tab-btn" data-settings-tab="privacy" onclick="switchSettingsSection('privacy')">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            <span>Privacy & Policies</span>
+          </button>
+          <button class="settings-tab-btn" data-settings-tab="exclusions" onclick="switchSettingsSection('exclusions')">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span>Exclusions & Whitelist</span>
+          </button>
+          <button class="settings-tab-btn" data-settings-tab="system" onclick="switchSettingsSection('system')">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>System & Engine</span>
+          </button>
+        </div>
+
+        <!-- SECTION 1: Appearance & Theming -->
+        <div class="settings-section-card active" id="sec-settings-appearance">
+          <div class="card-header-flex">
+            <div>
+              <h3>Interface Appearance & Theme</h3>
+              <p>Configure SentinelFlow visual theme. Automatically synchronizes with your Windows display mode.</p>
+            </div>
+            <span class="badge secondary" id="current-theme-badge">System Default</span>
+          </div>
+
+          <div class="theme-picker-container">
+            <div class="theme-card" id="theme-card-system" onclick="setAppTheme('system')">
+              <div class="theme-preview system-preview">
+                <div class="preview-half light-half"></div>
+                <div class="preview-half dark-half"></div>
+              </div>
+              <div class="theme-card-info">
+                <strong>Windows Default (Auto-Detect)</strong>
+                <small>Matches your Windows operating system theme automatically</small>
+              </div>
+            </div>
+
+            <div class="theme-card" id="theme-card-light" onclick="setAppTheme('light')">
+              <div class="theme-preview light-preview">
+                <div class="preview-header" style="background:#FFFFFF;"></div>
+                <div class="preview-btn" style="background:#1F6F68;"></div>
+              </div>
+              <div class="theme-card-info">
+                <strong>Light Theme</strong>
+                <small>Background: #F5F6F3 | Accent: #1F6F68</small>
+              </div>
+            </div>
+
+            <div class="theme-card" id="theme-card-dark" onclick="setAppTheme('dark')">
+              <div class="theme-preview dark-preview">
+                <div class="preview-header" style="background:#161D21;"></div>
+                <div class="preview-btn" style="background:#59C3B7;"></div>
+              </div>
+              <div class="theme-card-info">
+                <strong>Dark Theme</strong>
+                <small>Background: #0D1113 | Accent: #59C3B7</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: Threat Protection -->
+        <div class="settings-section-card hidden" id="sec-settings-protection">
+          <div class="card-header-flex">
+            <div>
+              <h3>Threat Protection & Heuristics</h3>
+              <p>Real-time file scanning, behavioral shields, and archive inspection policies.</p>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Real-Time File & Download Interceptor</strong>
+              <p class="text-muted">Continuously intercept malware upon file download or creation</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-realtime" checked
+                onchange="updateSetting('realtime_protection', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Scan on File Modification</strong>
+              <p class="text-muted">Inspect files whenever modified by running applications</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-scan-modify" checked
+                onchange="updateSetting('realtime_scan_on_modify', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Automatic Quarantine</strong>
+              <p class="text-muted">Immediately encrypt and isolate detected threats without prompting</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-auto-quarantine" checked
+                onchange="updateSetting('auto_quarantine', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Deep Binary Heuristics</strong>
+              <p class="text-muted">PE RWX section checks, entropy analysis, and remote injection heuristics</p>
+            </div>
+            <select class="form-select" id="setting-heuristic" onchange="updateSetting('heuristic_level', this.value)">
+              <option value="deep">Deep Analysis (Recommended)</option>
+              <option value="aggressive">Aggressive (Maximum Security)</option>
+              <option value="standard">Standard Signatures Only</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Archive Scanning (.zip, .tar)</strong>
+              <p class="text-muted">Inspect compressed archives for nested executables and droppers</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-scan-archives" checked
+                onchange="updateSetting('scan_archives', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SECTION 3: Privacy & Policies -->
+        <div class="settings-section-card hidden" id="sec-settings-privacy">
+          <div class="card-header-flex">
+            <div>
+              <h3>Removable Storage & Notification Policies</h3>
+              <p>Configure external media detection behaviors and alert handling.</p>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Automatic Removable Device Scanning</strong>
+              <p class="text-muted">Automatically inspect plugged-in USB storage devices in a background mini-scanner without asking</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-auto-scan-usb" checked
+                onchange="updateSetting('auto_scan_usb', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Removable Device (USB) Shield Policy</strong>
+              <p class="text-muted">Handling policy for newly inserted external media</p>
+            </div>
+            <select class="form-select" id="setting-usb-policy" onchange="updateSetting('usb_policy', this.value)">
+              <option value="auto_scan">Auto-Scan in Background Mini-Window (Recommended)</option>
+              <option value="prompt">Prompt User Modal Before Scanning</option>
+              <option value="silent_block">Monitor Only</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Quarantine Vault Retention</strong>
+              <p class="text-muted">Automatic retention period for isolated threats in vault</p>
+            </div>
+            <select class="form-select" id="setting-quarantine-retention"
+              onchange="updateSetting('quarantine_retention_days', parseInt(this.value))">
+              <option value="30">Keep for 30 Days</option>
+              <option value="60">Keep for 60 Days</option>
+              <option value="90">Keep for 90 Days</option>
+              <option value="-1">Keep Indefinitely</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SECTION 4: Whitelist & Exclusions -->
+        <div class="settings-section-card hidden" id="sec-settings-exclusions">
+          <div class="card-header-flex">
+            <div>
+              <h3>Trusted Paths & Exclusions Whitelist</h3>
+              <p class="text-muted">Directories configured here will bypass all scan and real-time interceptors.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="addExclusionFolder()">+ Add Exclusion</button>
+          </div>
+          <ul class="exclusions-list" id="exclusions-list">
+            <li class="empty-text">No custom exclusions configured.</li>
+          </ul>
+        </div>
+
+        <!-- SECTION 5: System & Engine -->
+        <div class="settings-section-card hidden" id="sec-settings-system">
+          <div class="card-header-flex">
+            <div>
+              <h3>System Startup & Resource Policies</h3>
+              <p class="text-muted">Configure processor usage profiles and boot launch behavior.</p>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Scanner Resource Profile</strong>
+              <p class="text-muted">CPU throttle policy during background and manual scans</p>
+            </div>
+            <select class="form-select" id="setting-perf-profile"
+              onchange="updateSetting('performance_profile', this.value)">
+              <option value="balanced">Balanced (Recommended)</option>
+              <option value="maximum">Maximum Speed (High CPU)</option>
+              <option value="low_cpu">Low CPU Footprint (Background)</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <div>
+              <strong>Launch on Windows Boot</strong>
+              <p class="text-muted">Automatically launch background resident shield when computer starts</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-start-boot" checked
+                onchange="updateSetting('start_on_boot', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row" style="margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+            <div>
+              <strong>Factory Defaults</strong>
+              <p class="text-muted">Reset all protection policies, exclusions, and settings to original state</p>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="resetFactorySettings()">Reset All Settings</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay hidden" id="usb-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <svg viewBox="0 0 24 24" class="modal-icon-svg">
+          <path
+            d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07c.7-.37 1.2-1.08 1.2-1.93 0-1.21-.99-2.2-2.2-2.2-1.21 0-2.2.99-2.2 2.2 0 .85.5 1.56 1.2 1.93V13c0 1.11.89 2 2 2h3v3.05c-.71.37-1.2 1.1-1.2 1.95a2.2 2.2 0 0 0 4.4 0c0-.85-.49-1.58-1.2-1.95V15h3c1.11 0 2-.89 2-2v-2h1V7h-4z" />
+        </svg>
+        <h3>Removable Storage Connected</h3>
+      </div>
+      <p>A removable storage volume was mounted at <strong id="usb-modal-drive">E:\</strong>.</p>
+      <p class="text-muted">Would you like SentinelFlow to inspect this device for autorun viruses and shortcut
+        payloads?</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeUsbModal()">Dismiss</button>
+        <button class="btn btn-primary" onclick="scanUsbDrive()">Scan Removable Device</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="clean-confirm-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <svg viewBox="0 0 24 24" class="modal-icon-svg">
+          <path
+            d="M15 4V3H9v1H4v2h1v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V6h1V4h-5zm2 15H7V6h10v13zM9 8h2v9H9zm4 0h2v9h-2z" />
+        </svg>
+        <h3>Confirm System Cleanup</h3>
+      </div>
+      <p>SentinelFlow will safely purge <strong id="confirm-clean-size">0 MB</strong> of temporary and unusable files
+        across the selected categories.</p>
+      <p class="text-muted">This operation will reclaim local disk space and optimize background RAM working sets.</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeCleanModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="executeCleanJunk()">Yes, Clean Selected Files</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help & About Modal (Kaspersky-style) -->
+  <div class="modal-overlay hidden" id="help-about-modal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="brand-logo"
+            style="width: 38px; height: 38px; background: #FFFFFF; border-radius: 50%; padding: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+            <svg class="brand-mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 1 24 6v7c0 8-5 12-11 12S2 21 2 13V6l11-5Z" stroke="#1F6F68" stroke-width="1.8"
+                stroke-linejoin="round" />
+              <path d="M8 13.2l3.3 3.3L18.2 9" stroke="#1F6F68" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <h3 style="font-size: 16px; margin: 0;">SentinelFlow</h3>
+            <span style="font-size: 11.5px; color: var(--text-muted);">Next-Generation Antivirus & Performance</span>
+          </div>
+        </div>
+        <button class="win-btn win-close-btn" onclick="closeHelpModal()"
+          style="border-radius: 4px; width: 28px; height: 28px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path
+              d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          </svg>
+        </button>
+      </div>
+
+      <div style="margin: 16px 0; display: flex; flex-direction: column; gap: 10px;">
+        <div
+          style="display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-input); border-radius: 6px; font-size: 12.5px;">
+          <span style="color: var(--text-muted);">Product Version:</span>
+          <strong>v2.4.0 (Enterprise Release)</strong>
+        </div>
+        <div
+          style="display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-input); border-radius: 6px; font-size: 12.5px;">
+          <span style="color: var(--text-muted);">Virus Definitions:</span>
+          <strong class="text-success">Synchronized & Active</strong>
+        </div>
+        <div
+          style="display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-input); border-radius: 6px; font-size: 12.5px;">
+          <span style="color: var(--text-muted);">Real-Time Guard:</span>
+          <strong class="text-success">Watchdog Resident Shield Running</strong>
+        </div>
+        <div
+          style="display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-input); border-radius: 6px; font-size: 12.5px;">
+          <span style="color: var(--text-muted);">UI Theme:</span>
+          <strong style="text-transform: capitalize;" id="help-theme-label">Dark Theme Active</strong>
+        </div>
+      </div>
+
+      <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px 0;">
+        Multi-vector threat protection with real-time download interception, USB removable media scanning, working set
+        memory boosting, and encrypted quarantine isolation.
+      </p>
+
+      <div class="modal-actions" style="margin-top: 0;">
+        <button class="btn btn-outline" onclick="openProUpgrade()">Upgrade License</button>
+        <button class="btn btn-primary" onclick="closeHelpModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

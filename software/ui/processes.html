@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelFlow - Process Resource Monitor</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      padding: 24px;
+      overflow-y: auto;
+      height: 100vh;
+    }
+    .proc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .proc-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 8px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 13px;
+    }
+    .proc-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .btn-outline {
+      background: transparent !important;
+      border: 1px solid var(--accent-color) !important;
+      color: var(--accent-color) !important;
+    }
+    .btn-outline:hover {
+      background: var(--accent-light) !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="proc-header">
+    <div>
+      <h2>PC Resource Consumption & Process Manager</h2>
+      <p class="text-muted">Inspect live active processes, RAM footprint, CPU allocation, and terminate background resource hogs.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-outline btn-sm" onclick="loadProcesses()">Refresh Processes</button>
+    </div>
+  </div>
+
+  <div class="proc-controls">
+    <input type="text" class="search-input" id="proc-search" placeholder="Search active processes by name or PID..." oninput="filterProcesses()">
+  </div>
+
+  <div class="proc-table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>PID</th>
+          <th>Process Name</th>
+          <th>Memory Usage</th>
+          <th>CPU %</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="proc-table-body">
+        <tr><td colspan="6" class="text-center text-muted">Loading running processes...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let allProcs = [];
+
+    window.addEventListener('pywebviewready', async () => {
+      if (window.pywebview && window.pywebview.api) {
+        const config = await window.pywebview.api.get_config();
+        if (config.theme) {
+          document.documentElement.setAttribute('data-theme', config.theme);
+        }
+        loadProcesses();
+        setInterval(loadProcesses, 3000);
+      }
+    });
+
+    async function loadProcesses() {
+      if (window.pywebview && window.pywebview.api) {
+        allProcs = await window.pywebview.api.get_running_processes();
+        renderProcesses(allProcs);
+      }
+    }
+
+    function renderProcesses(procs) {
+      const tbody = document.getElementById('proc-table-body');
+      if (!procs || procs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No processes found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = procs.map(p => {
+        const hasPath = p.exe_path ? `<button class="btn btn-outline btn-sm" onclick="showPathInExplorer('${p.exe_path.replace(/\\/g, '\\\\')}')">Show in Explorer</button>` : '';
+
+        return `
+          <tr>
+            <td style="font-family:monospace;">${p.pid}</td>
+            <td><strong>${p.name}</strong></td>
+            <td style="font-weight:600; color:var(--accent-color);">${p.memory_mb} MB</td>
+            <td>${p.cpu_percent}%</td>
+            <td><span class="badge secondary">${p.status}</span></td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                ${hasPath}
+                <button class="btn btn-danger btn-sm" onclick="killProcess(${p.pid}, '${p.name}')">End Task</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterProcesses() {
+      const q = document.getElementById('proc-search').value.toLowerCase();
+      const filtered = allProcs.filter(p => p.name.toLowerCase().includes(q) || String(p.pid).includes(q));
+      renderProcesses(filtered);
+    }
+
+    async function showPathInExplorer(path) {
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.open_path_in_explorer(path);
+      }
+    }
+
+    async function killProcess(pid, name) {
+      if (confirm(`Terminate background process "${name}" (PID: ${pid})?`)) {
+        if (window.pywebview && window.pywebview.api) {
+          const res = await window.pywebview.api.terminate_process(pid);
+          if (res) {
+            loadProcesses();
+          } else {
+            alert(`Could not terminate process ${name}. Access denied or system process.`);
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

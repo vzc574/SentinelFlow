@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelFlow - Security Audit & Activity History</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      padding: 24px;
+      overflow-y: auto;
+      height: 100vh;
+    }
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .history-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 8px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 13px;
+    }
+    .history-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .btn-outline {
+      background: transparent !important;
+      border: 1px solid var(--accent-color) !important;
+      color: var(--accent-color) !important;
+    }
+    .btn-outline:hover {
+      background: var(--accent-light) !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="history-header">
+    <div>
+      <h2>Security Audit & Activity History</h2>
+      <p class="text-muted">Comprehensive persistent event log of all real-time interceptions, scans, tune-ups, and user actions.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-outline btn-sm" onclick="exportHistoryCsv()">Export CSV</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">Clear Log</button>
+    </div>
+  </div>
+
+  <div class="history-controls">
+    <input type="text" class="search-input" id="history-search" placeholder="Search events by keyword, file name, or threat signature..." oninput="filterHistory()">
+    <select class="form-select" id="history-severity-filter" onchange="filterHistory()">
+      <option value="ALL">All Severities</option>
+      <option value="CRITICAL">Critical Threats</option>
+      <option value="WARNING">Warnings</option>
+      <option value="INFO">Informational</option>
+      <option value="SUCCESS">Success Actions</option>
+    </select>
+  </div>
+
+  <div class="history-table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Type</th>
+          <th>Severity</th>
+          <th>Event Title</th>
+          <th>Details / Location</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="history-table-body">
+        <tr><td colspan="6" class="text-center text-muted">Loading activity events...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let allEvents = [];
+
+    window.addEventListener('pywebviewready', async () => {
+      if (window.pywebview && window.pywebview.api) {
+        const config = await window.pywebview.api.get_config();
+        if (config.theme) {
+          document.documentElement.setAttribute('data-theme', config.theme);
+        }
+        loadHistoryEvents();
+      }
+    });
+
+    async function loadHistoryEvents() {
+      if (window.pywebview && window.pywebview.api) {
+        allEvents = await window.pywebview.api.get_history_events();
+        renderHistory(allEvents);
+      }
+    }
+
+    function renderHistory(events) {
+      const tbody = document.getElementById('history-table-body');
+      if (!events || events.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No activity events recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = events.map(e => {
+        const sevClass = e.severity === 'CRITICAL' ? 'danger' : (e.severity === 'WARNING' ? 'secondary' : (e.severity === 'SUCCESS' ? 'success' : 'secondary'));
+        const hasPath = e.target_path ? `<button class="btn btn-outline btn-sm" onclick="showPathInExplorer('${e.target_path.replace(/\\/g, '\\\\')}')">Show in Explorer</button>` : `<span class="text-muted">-</span>`;
+
+        return `
+          <tr>
+            <td style="white-space:nowrap; font-family:monospace;">${e.timestamp}</td>
+            <td><span class="badge secondary">${e.event_type}</span></td>
+            <td><span class="badge ${sevClass}">${e.severity}</span></td>
+            <td><strong>${e.title}</strong></td>
+            <td title="${e.details}">${e.details.substring(0, 60)}${e.details.length > 60 ? '...' : ''}</td>
+            <td>${hasPath}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterHistory() {
+      const query = document.getElementById('history-search').value.toLowerCase();
+      const sev = document.getElementById('history-severity-filter').value;
+
+      const filtered = allEvents.filter(e => {
+        const matchQuery = !query || e.title.toLowerCase().includes(query) || e.details.toLowerCase().includes(query) || (e.target_path && e.target_path.toLowerCase().includes(query));
+        const matchSev = (sev === 'ALL') || e.severity === sev;
+        return matchQuery && matchSev;
+      });
+
+      renderHistory(filtered);
+    }
+
+    async function showPathInExplorer(path) {
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.open_path_in_explorer(path);
+      }
+    }
+
+    async function exportHistoryCsv() {
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.export_history_csv();
+      }
+    }
+
+    async function clearAllHistory() {
+      if (confirm("Are you sure you want to clear the entire security audit log?")) {
+        if (window.pywebview && window.pywebview.api) {
+          await window.pywebview.api.clear_history();
+          loadHistoryEvents();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
