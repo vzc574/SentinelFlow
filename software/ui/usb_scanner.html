@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelFlow - Removable Device Auto-Scan</title>
+  <style>
+    :root {
+      --bg-primary: #0D1113;
+      --card-bg: #161D21;
+      --card-inner: #1C2428;
+      --accent: #59C3B7;
+      --accent-hover: #48a69b;
+      --text-main: #EDF2F4;
+      --text-muted: #8E9BAE;
+      --border-color: rgba(89, 195, 183, 0.22);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --success: #22C55E;
+      --danger: #EF4444;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #F5F6F3;
+      --card-bg: #FFFFFF;
+      --card-inner: #F8F9FA;
+      --accent: #1F6F68;
+      --accent-hover: #175751;
+      --text-main: #1A202C;
+      --text-muted: #718096;
+      --border-color: rgba(31, 111, 104, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Frameless Drag Header */
+    .mini-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+      padding: 0 14px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      -webkit-app-region: drag;
+    }
+
+    .mini-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mini-logo {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .mini-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      color: var(--text-main);
+    }
+
+    .drive-pill {
+      background: rgba(89, 195, 183, 0.15);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    [data-theme="light"] .drive-pill {
+      background: rgba(31, 111, 104, 0.12);
+    }
+
+    .mini-header-actions {
+      -webkit-app-region: no-drag;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mini-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .mini-close-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      color: var(--danger);
+    }
+
+    /* Main Mini Content */
+    .mini-body {
+      flex: 1;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--bg-primary);
+    }
+
+    /* Status row */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .radar-pulse {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(89, 195, 183, 0.2);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .radar-pulse::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      animation: pulse 1.6s infinite ease-out;
+      opacity: 0.6;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .status-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .status-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 360px;
+      margin-top: 2px;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      width: 100%;
+      height: 7px;
+      background: var(--card-inner);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0;
+      border: 1px solid var(--border-color);
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #22C55E);
+      border-radius: 4px;
+      transition: width 0.2s ease;
+    }
+
+    /* Metrics Strip */
+    .mini-metrics {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      padding: 0 2px;
+    }
+
+    .metric-val {
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .metric-threats.safe {
+      color: var(--success);
+    }
+
+    .metric-threats.threat {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    /* Mini Footer / Action Buttons */
+    .mini-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+      -webkit-app-region: no-drag;
+    }
+
+    .btn {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0D1113;
+    }
+
+    [data-theme="light"] .btn-primary {
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: rgba(89, 195, 183, 0.1);
+      border-color: var(--accent);
+    }
+
+    /* Finished View */
+    .finish-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .finish-icon.safe {
+      background: rgba(34, 197, 94, 0.16);
+      color: var(--success);
+    }
+
+    .finish-icon.threat {
+      background: rgba(239, 68, 68, 0.16);
+      color: var(--danger);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Drag Titlebar -->
+  <header class="mini-header pywebview-drag-region">
+    <div class="mini-header-left">
+      <svg class="mini-logo" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 1 24 6v7c0 8-5 12-11 12S2 21 2 13V6l11-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M8 13.2l3.3 3.3L18.2 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="mini-title">SentinelFlow Auto-Scan</span>
+      <span class="drive-pill" id="badge-drive">USB E:\</span>
+    </div>
+    <div class="mini-header-actions">
+      <button class="mini-close-btn" onclick="closeScannerWindow()" title="Close Notification">✕</button>
+    </div>
+  </header>
+
+  <!-- Body -->
+  <main class="mini-body">
+    <!-- Active Scanning State -->
+    <div id="state-scanning">
+      <div class="status-row">
+        <div class="radar-pulse">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="status-title">Auto-Scanning Removable Storage...</div>
+          <div class="status-sub" id="usb-current-file">Scanning autorun, droppers, and boot sectors...</div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar-fill" id="usb-progress-bar"></div>
+      </div>
+
+      <div class="mini-metrics">
+        <span>Files: <strong class="metric-val" id="m-files">0</strong></span>
+        <span>Data: <strong class="metric-val" id="m-mb">0 MB</strong></span>
+        <span>Threats: <strong class="metric-threats safe" id="m-threats">0 Clean</strong></span>
+        <span>Time: <strong class="metric-val" id="m-time">00:00</strong></span>
+      </div>
+    </div>
+
+    <!-- Completed State -->
+    <div id="state-completed" class="hidden">
+      <div class="status-row">
+        <div class="finish-icon safe" id="finish-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="status-title" id="finish-title">Drive Verified Clean</div>
+          <div class="status-sub" id="finish-sub">No threats or malicious binaries detected.</div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar-fill" style="width: 100%;"></div>
+      </div>
+
+      <div class="mini-metrics">
+        <span id="finish-stats">Scanned 145 files (24 MB) in 1.4s</span>
+        <span class="metric-threats safe" id="finish-threats-badge">✓ 100% Safe</span>
+      </div>
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="mini-footer">
+      <button class="btn btn-outline" id="btn-open-drive" onclick="openDriveInExplorer()">📁 Open Drive</button>
+      <button class="btn btn-outline" id="btn-main-app" onclick="openMainApp()">🛡️ SentinelFlow</button>
+      <button class="btn btn-primary" id="btn-done" onclick="closeScannerWindow()">Dismiss</button>
+    </div>
+  </main>
+
+  <script>
+    let currentDrive = 'USB Storage';
+    let isFinished = false;
+
+    function initUsbScanner(data) {
+      if (!data) return;
+      if (data.theme) {
+        document.documentElement.setAttribute('data-theme', data.theme);
+      }
+      if (data.drive) {
+        currentDrive = data.drive;
+        const driveLabel = data.label ? `${data.label} (${data.drive})` : `USB ${data.drive}`;
+        const badge = document.getElementById('badge-drive');
+        if (badge) badge.innerText = driveLabel;
+      }
+    }
+
+    window.addEventListener('pywebviewready', async () => {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.get_drive_info) {
+        try {
+          const info = await window.pywebview.api.get_drive_info();
+          initUsbScanner(info);
+        } catch (e) {
+          console.error("Drive info error:", e);
+        }
+      }
+    });
+
+    // Called from Python scanner progress callback
+    function updateUsbProgress(data) {
+      if (isFinished) return;
+      
+      const fileElem = document.getElementById('usb-current-file');
+      if (fileElem && data.current_file) {
+        fileElem.innerText = data.current_file;
+      }
+
+      const percent = data.percent !== undefined ? data.percent : 0;
+      const bar = document.getElementById('usb-progress-bar');
+      if (bar) bar.style.width = `${percent}%`;
+
+      const scanned = data.scanned_count || 0;
+      const total = data.total_files || 0;
+      document.getElementById('m-files').innerText = (total > 0) ? `${scanned} / ${total}` : `${scanned}`;
+      
+      const mb = (data.mb_scanned !== undefined) ? data.mb_scanned : (data.scanned_mb || 0);
+      document.getElementById('m-mb').innerText = `${mb} MB`;
+
+      const elapsedSec = (data.elapsed_seconds !== undefined) ? data.elapsed_seconds : (data.elapsed || 0);
+      const m = Math.floor(elapsedSec / 60).toString().padStart(2, '0');
+      const s = (elapsedSec % 60).toString().padStart(2, '0');
+      document.getElementById('m-time').innerText = `${m}:${s}`;
+
+      const threatsElem = document.getElementById('m-threats');
+      const count = data.threats_count || 0;
+      if (count > 0) {
+        threatsElem.className = 'metric-threats threat';
+        threatsElem.innerText = `⚠ ${count} Threat(s)`;
+      } else {
+        threatsElem.className = 'metric-threats safe';
+        threatsElem.innerText = '0 Clean';
+      }
+    }
+
+    // Called from Python when threat found
+    function onUsbThreat(threat) {
+      const threatsElem = document.getElementById('m-threats');
+      threatsElem.className = 'metric-threats threat';
+      threatsElem.innerText = `⚠ Threat Neutralized`;
+    }
+
+    // Called from Python on completion
+    function onUsbComplete(summary) {
+      isFinished = true;
+      document.getElementById('state-scanning').classList.add('hidden');
+      document.getElementById('state-completed').classList.remove('hidden');
+
+      const threatsCount = summary.threats_count || 0;
+      const finishIcon = document.getElementById('finish-icon');
+      const finishTitle = document.getElementById('finish-title');
+      const finishSub = document.getElementById('finish-sub');
+      const finishBadge = document.getElementById('finish-threats-badge');
+
+      if (threatsCount === 0) {
+        finishIcon.className = 'finish-icon safe';
+        finishIcon.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+        finishTitle.innerText = `Drive Verified Clean (${currentDrive})`;
+        finishSub.innerText = `Zero malware or autorun threats detected. Device is safe to use.`;
+        finishBadge.className = 'metric-threats safe';
+        finishBadge.innerText = '✓ Safe';
+      } else {
+        finishIcon.className = 'finish-icon threat';
+        finishIcon.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`;
+        finishTitle.innerText = `⚠ ${threatsCount} Threat(s) Neutralized`;
+        finishSub.innerText = `Malicious files on ${currentDrive} were quarantined in the Encrypted Vault.`;
+        finishBadge.className = 'metric-threats threat';
+        finishBadge.innerText = `⚠ ${threatsCount} Quarantined`;
+      }
+
+      document.getElementById('finish-stats').innerText = `Scanned ${summary.scanned_count || 0} files (${summary.scanned_mb || 0} MB) in ${summary.elapsed_seconds || 0}s`;
+    }
+
+    async function closeScannerWindow() {
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.close_window();
+      } else {
+        window.close();
+      }
+    }
+
+    async function openDriveInExplorer() {
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.open_drive();
+      }
+    }
+
+    async function openMainApp() {
+      if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.show_main_app();
+      }
+    }
+  </script>
+</body>
+</html>
